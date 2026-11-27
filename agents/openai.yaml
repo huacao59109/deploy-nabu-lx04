@@ -1,0 +1,4 @@
+interface:
+  display_name: "LX04 语音助手部署"
+  short_description: "先了解设备、模型和网络条件，再按需刷机并用同一 APK 部署三档语音助手"
+  default_prompt: "用 $deploy-nabu-lx04 帮我评估现有配置，选好方案后部署 Nabu。"
