@@ -49,6 +49,8 @@ adb -s $serial shell pm path com.xiaomi.micolauncher
 
 已核验的 SP5.5 镜像 system.img 中读取到指纹 `XiaoAiTongXue/mi_lx04/mi_lx04:8.1.0/O11019/1626056297:user/test-keys`，其中 /system/build.prop 的 SHA-256 为 `DA6F2CDCC76B134D93FEFDF7BE4BBF80561DE8EB8A42A5D657B475A6B2A5043D`。确认机型 mi_lx04、API 27、支持 armeabi-v7a、boot_completed 为 1。指纹和文件哈希只核对该构建的系统属性，不证明所有分区逐字节相同。对没有刷写记录但这些特征相符的设备，先验证原生仲裁、所需权限及接管能力，能运行即走部署路径。读数不同须先查当前 ROM 的来源，不自动重刷。
 
+**三档必做**：现在执行[刷后默认设置](post-flash.md)，完成独立米家停用和无线 SSH 密钥登录，再返回此处安装 Nabu。
+
 先保存以下命令输出，供原样回退，尤其注意属性原为空、app-op 无记录也是有效值。
 
 ```powershell
@@ -82,12 +84,31 @@ adb -s $serial shell dumpsys activity services dev.herald.lx04
 
 再次查询两个 app-op 及 HOME，核对 Nabu 的 SpeakerService 正在前台运行。原机桌面申请悬浮权限时保持关闭，首次配置处理完返回桌面。若用户要撤回接管，按部署前记录分别恢复属性及两项 app-op，无原设置的 app-op 用 default。原属性为空时，PowerShell 用 `adb -s $serial shell "setprop persist.mi.aivs.ip ''"` 并回读。再重启原厂桌面。要停用 Nabu 可 `pm disable-user --user 0 dev.herald.lx04`，需要恢复时 `pm enable dev.herald.lx04`。已接管设备更新不应把当前的 ignore 或回环地址误当成原厂基线。
 
+## 重启后确认桌面和语音接管
+
+先在设置页完成所选服务的验证并启用语音。首次授权、登录或验证尚未完成时，不能验收开机接管。与 SSH 和米家的复核共用一次正常重启。等系统与 Wi-Fi 就绪，观察开机直到原厂待机桌面稳定；MicoLauncher 的“显示在其他应用的上层”页可能短暂出现。若出现，应自行退出，开关保持关闭。当前 APK 仅在真正开机、语音已启用时，轮询约 30 秒识别这一特定权限页；没有弹出也正常。录音、USB 授权或用户主动打开的设置页按其用途正常处理。
+
+```powershell
+adb -s $serial shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME
+adb -s $serial shell cmd appops get com.xiaomi.micolauncher PLAY_AUDIO
+adb -s $serial shell cmd appops get com.xiaomi.micolauncher SYSTEM_ALERT_WINDOW
+adb -s $serial shell getprop persist.mi.aivs.ip
+adb -s $serial shell dumpsys activity services dev.herald.lx04 | Select-String 'SpeakerService|isForeground'
+adb -s $serial shell dumpsys activity activities | Select-String 'mResumedActivity'
+adb -s $serial logcat -d -s 'NabuLX04:I' '*:S' | Select-String '开机已返回原厂待机桌面'
+```
+
+核对 HOME 为原厂 MicoLauncher、两项 app-op 均为 ignore、云端语音地址为 127.0.0.1，SpeakerService 已启动。用新启动周期的顶层界面和实际屏幕判断；日志标记只在自动退出权限页时产生。若页面持续停留，先核对目标包、当前启动周期、READ_LOGS 授权和语音是否已启用。修正后正常重启复验。不要为消除这一页授予悬浮权限或屏蔽系统设置。旧测试机若把 Nabu 设为 HOME 或曾停用原桌面，先核实已有改动，再恢复已确认的原厂桌面和原生唤醒基线。
+
 ## 真机验收和定位
 
 | 操作 | 看什么 |
 |---|---|
 | 靠近本机说「小爱同学」，再说「只说蓝色雨伞」 | 原生选中本机后才开 Nabu；大表情球、实际播报、第一行绿色用户字幕、第二行白色 AI 字幕。若有另一台，在另一台旁重复，本机应保持待机。 |
 | 让它慢慢数数，中途纠正，接着追问 | 正常插话能让出话轮、追问不用重唤醒。家人旁聊单独测试有没有误停、误答或误派；绿色字幕显示旁聊本身符合设计。 |
+| LX04 获选后提一个容易触发原厂卡片的问题 | 一句唤醒应答可保留；随后只有 Nabu 回答并显示内容。无原厂公式卡片、重复朗读或“这个问题我还在学习”字幕。在支持图片的标准档让 Hermes 显示图片，再说“把图片关掉”，确认恢复大球并能直接追问。 |
+| 在日常音量播报时安静片刻，再开口插话 | 静听时无自问自答，人声能打断且第一句话听清。标准档使用 WebRTC 软件回声消除；豆包使用通话录音源，并在平台支持时启用系统 AEC，以实听判断。 |
+| 挂断后再做两轮原生唤醒；有第二台时交替靠近 | 不点屏、不重开应用。LX04 两次获选均能听清新一句，挂断后回原厂待机；靠近另一台只有另一台回答。借此验证 Nabu 已释放录放音与音频焦点，原生麦克风能接回。 |
 | 标准档：提出用户环境中可核对的只读 Hermes 任务 | 看 Hermes 图标、任务实际到达与结果。动态记录可从 logcat 的 LiveCallLifecycle、NabuLX04 查 model_handoff、match_accepted、submit_Sent 及任务结束。只说“查一下”不足以验收。 |
 | 中配已启用 Seed Pro：先闲聊，再用明确数据提一道多步比较题，追问进度 | 闲聊预期零次推理；复杂题查 `NabuLX04` 的 `Seed Pro dispatch` 一次及 `Seed Pro result`，听取同一语音会话的真实结论。记录是否误派、漏派或重复。未配置 HA 时，要求控制设备应说明能力范围。 |
 | 中配已启用 Seed Pro：在推理过程中挂断，重新唤醒后另问一题 | 原通话的迟到结论不会在待机或新会话中播报。验证远场、插话和旁聊时分别记录听感，离线回放不能证明真机回声消除或模型选路效果。 |
