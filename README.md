@@ -4,9 +4,11 @@
 
 ## 部署后的通话界面
 
-![LX04 部署效果示意图：白色音箱屏幕上显示 Nabu 表情球、左侧语音波形，以及绿色「小爱同学」和白色「我在」两行字幕](assets/lx04-nabu-call-preview.png)
+| 默认 · 表情球 | 可选 · 龙珠 18 号 |
+|:---:|:---:|
+| <img src="assets/lx04-nabu-call-preview.png" alt="LX04 屏幕上的表情球、绿色波形和双行字幕" width="458"> | <img src="assets/lx04-android18-call-preview.png" alt="LX04 屏幕上的龙珠 18 号角色、绿色波形和双行字幕" width="458"> |
 
-用「小爱同学」唤醒后，屏幕中央会出现 Nabu 的表情球（emotion-ball），左侧是语音波形。你说的话显示在第一行（绿色），Nabu 的回答显示在第二行（白色）；插话时两行字幕可以同时显示。上图为效果示意。[查看 LX04 真机通话截图](assets/lx04-nabu-conversation.png)
+用「小爱同学」唤醒后，默认显示表情球。喜欢 18 号的用户可以在 Nabu LX04 设置中打开**通话角色使用「龙珠 · 18号」**，下次唤醒生效。两种主题的左侧都显示语音波形。你说的话显示在第一行（绿色），Nabu 的回答显示在第二行（白色）；插话时两行字幕可以同时显示。上图为效果示意。[查看 LX04 真机通话截图](assets/lx04-nabu-conversation.png)
 
 ## 先确认机型
 
